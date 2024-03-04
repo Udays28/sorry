@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Page</title>
+    <style>
+        video {
+            width: 100%;
+            max-width: 600px;
+            display: block;
+            margin: auto;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Camera Page</h1>
+    <button onclick="startCamera()">Start Camera</button>
+    <button onclick="switchCamera()">Switch Camera</button>
+    <video id="camera" autoplay playsinline></video>
+
+    <script>
+        let cameraStream;
+        let isFrontCamera = true;
+
+        async function startCamera() {
+            try {
+                const constraints = { video: { facingMode: isFrontCamera ? 'user' : 'environment' } };
+                cameraStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const videoElement = document.getElementById('camera');
+                videoElement.srcObject = cameraStream;
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+            }
+        }
+
+        function switchCamera() {
+            if (cameraStream) {
+                isFrontCamera = !isFrontCamera;
+                const videoTracks = cameraStream.getVideoTracks();
+                videoTracks[0].stop();
+                startCamera();
+            }
+        }
+
+        // Stop the camera stream when the page is closed or navigated away
+        window.addEventListener('beforeunload', () => {
+            if (cameraStream) {
+                const videoTracks = cameraStream.getVideoTracks();
+                videoTracks.forEach(track => track.stop());
+            }
+        });
+    </script>
+</body>
+</html>
